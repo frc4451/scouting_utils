@@ -2,7 +2,7 @@
 # Example: watch-and-save.sh "firstsc" "1080p60"
 
 help() {
-    echo 'Example Usage: watch-and-save "firstc" "1080p60"'
+    echo 'Example Usage: watch-and-save.sh "firstc" "1080p60"'
     exit 0
 }
 
