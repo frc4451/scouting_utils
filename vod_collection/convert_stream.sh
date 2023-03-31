@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ################################################################################
 # Very basic conversion script for converting one format to another with ffmpeg
 #
