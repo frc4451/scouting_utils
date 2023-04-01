@@ -16,19 +16,25 @@ resolution="$2" # Example: "1080p60"
 # Setup
 outputDir="$PWD/saves"
 mkdir -p "$outputDir"
-savePath="${outputDir}/${channel}-$(date +"%mm-%dd-%Yy_%Hh-%Mm-%Ss").mp4"
+savePath="${outputDir}/${channel}-$(date +"%mm-%dd-%Yy_%Hh-%Mm-%Ss").mkv"
 
-# Download video live to $savePath
+# Downloads video live to $savePath
+# Write to stdout so we can pipe it into ffmpeg
+# Twitch Low Latency to reduce latency
+# Segment Stream Data to make immediately write data because we need it quickly
+# ffmpeg to convert into an mkv
 streamlink \
-    --output "$savePath" \
+    --stdout \
     --twitch-low-latency \
     --hls-segment-stream-data \
-    twitch.tv/"$channel" "$resolution" &
+    twitch.tv/"$channel" \
+    "$resolution" \
+    | ffmpeg -i pipe:0 -c:v copy -c:a copy -f matroska -y "$savePath" &
 
 streamlinkPID=$?
 
 # Give streamlink time to actually start writing the file
-sleep 5s
+sleep 5
 
 # Start watching with mpv
 # (Might also need to add the cage kiosk into this equation on a Raspberry Pi)
