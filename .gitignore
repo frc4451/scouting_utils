@@ -177,4 +177,4 @@ pyrightconfig.json
 
 # Anything we added
 *.pdf
-students.csv
+student*.csv

@@ -12,9 +12,19 @@ def create_assigned_groups_from_df(student_df: pd.DataFrame, batch_keys=["A", "B
 
     This function assumes we want to randomize the dataset.
     """
+    students_per_shift = 4
+
     # Shuffle the names
     if shuffle:
         student_df = student_df.sample(frac=1).reset_index(drop=True)
+
+    # If we don't have enough students to account for scouting, we need
+    # to fill this in later. Likely a mentor or any students sitting around.
+    while len(student_df) < (len(batch_keys) * students_per_shift):
+        student_df = pd.concat([student_df, pd.DataFrame({
+            "student_name": "TBA",
+            "student_team": "TBA"
+        }, index=[0])], ignore_index=True)
 
     # Assign batches row-wise to the new DataFrame
     assigned_groups = pd.DataFrame(
@@ -40,7 +50,8 @@ def create_assigned_groups_from_df(student_df: pd.DataFrame, batch_keys=["A", "B
         assigned_groups['group_indicator'].astype(str)
     assigned_groups = assigned_groups.drop(columns=['group_indicator'])
 
-    assigned_groups = assigned_groups.sort_values(by=['match_key'], ascending=True)
+    assigned_groups = assigned_groups.sort_values(
+        by=['match_key'], ascending=True)
 
     return assigned_groups
 
@@ -138,14 +149,14 @@ def write_df_to_pdf(scouter_df: pd.DataFrame, matches_df: pd.DataFrame, file_nam
     pdf.add_page()
 
     pdf.set_font("Arial", size=12)
-    
+
     # Help build lookups so we can use the name of the student in the actual schedule
     match_lookup = {}
     for _, row in scouter_df.iterrows():
         match_lookup[row['match_key']] = row['student_name']
 
     scouter_df = scouter_df.drop(columns=['match_key'])
-    
+
     # Calculates available column width on PDF
     available_width = pdf.w - (pdf.l_margin + pdf.r_margin)
     column_width = available_width / len(scouter_df.columns)
@@ -165,7 +176,6 @@ def write_df_to_pdf(scouter_df: pd.DataFrame, matches_df: pd.DataFrame, file_nam
     available_width = pdf.w - (pdf.l_margin + pdf.r_margin)
     column_width = available_width / len(matches_df.columns)
 
-
     # pdf.add_page()
     # pdf.set_font("Arial", size=12)
 
@@ -179,7 +189,6 @@ def write_df_to_pdf(scouter_df: pd.DataFrame, matches_df: pd.DataFrame, file_nam
     #     for col in matches_df.columns:
     #         pdf.cell(column_width, 10, str(row[col]), border=1)
     #     pdf.ln()
-
 
     pdf.add_page()
     pdf.set_font("Arial", size=12)
@@ -196,8 +205,10 @@ def write_df_to_pdf(scouter_df: pd.DataFrame, matches_df: pd.DataFrame, file_nam
         #     pdf.add_page()
         #     pdf.set_font("Arial", size=12)
 
-        pdf.cell(third_width, 10, f"Shift #{str(row['shift'])}", border=1, align="C")
-        pdf.cell(third_width * 2, 10, f"Matches: {str(row['matches'])}", border=1, align="C")
+        pdf.cell(third_width, 10,
+                 f"Shift #{str(row['shift'])}", border=1, align="C")
+        pdf.cell(third_width * 2, 10,
+                 f"Matches: {str(row['matches'])}", border=1, align="C")
         pdf.ln()
         pdf.cell(fifth_width, 10, "", border=1, align="C")
         pdf.cell(fifth_width, 10, "1", border=1, align="C")
@@ -206,29 +217,38 @@ def write_df_to_pdf(scouter_df: pd.DataFrame, matches_df: pd.DataFrame, file_nam
         pdf.cell(fifth_width, 10, "Backup", border=1, align="C")
         pdf.ln()
         pdf.cell(fifth_width, 10, "R", border=1, align="C")
-        pdf.cell(fifth_width, 10, match_lookup[str(row['R1'])], border=1, align="C")
-        pdf.cell(fifth_width, 10, match_lookup[str(row['R2'])], border=1, align="C")
-        pdf.cell(fifth_width, 10, match_lookup[str(row['R3'])], border=1, align="C")
-        pdf.cell(fifth_width, 10, match_lookup[str(row['RB'])], border=1, align="C")
+        pdf.cell(fifth_width, 10, match_lookup[str(
+            row['R1'])], border=1, align="C")
+        pdf.cell(fifth_width, 10, match_lookup[str(
+            row['R2'])], border=1, align="C")
+        pdf.cell(fifth_width, 10, match_lookup[str(
+            row['R3'])], border=1, align="C")
+        pdf.cell(fifth_width, 10, match_lookup[str(
+            row['RB'])], border=1, align="C")
         pdf.ln()
         pdf.cell(fifth_width, 10, "B", border=1, align="C")
-        pdf.cell(fifth_width, 10, match_lookup[str(row['B1'])], border=1, align="C")
-        pdf.cell(fifth_width, 10, match_lookup[str(row['B2'])], border=1, align="C")
-        pdf.cell(fifth_width, 10, match_lookup[str(row['B3'])], border=1, align="C")
-        pdf.cell(fifth_width, 10, match_lookup[str(row['BB'])], border=1, align="C")
+        pdf.cell(fifth_width, 10, match_lookup[str(
+            row['B1'])], border=1, align="C")
+        pdf.cell(fifth_width, 10, match_lookup[str(
+            row['B2'])], border=1, align="C")
+        pdf.cell(fifth_width, 10, match_lookup[str(
+            row['B3'])], border=1, align="C")
+        pdf.cell(fifth_width, 10, match_lookup[str(
+            row['BB'])], border=1, align="C")
         pdf.ln()
         pdf.ln()
-
 
     # Write file
     pdf.output(file_name)
+
 
 def create_default_output_directory() -> str:
     """
     Handles default output directory creation if the default output directory
     does not exist.
     """
-    default_write_directory: str = os.path.join(os.getcwd(), 'output_data', 'schedules')
+    default_write_directory: str = os.path.join(
+        os.getcwd(), 'output_data', 'schedules')
 
     # os.mkdir(default_write_directory)
     if not os.path.exists(default_write_directory):
@@ -246,7 +266,7 @@ if __name__ == "__main__":
                         help='Evnet for labelling the schedule', required=True)
     parser.add_argument('--out_path', type=str,
                         help='Output directory.', default=create_default_output_directory())
-                        # help='Output directory.', default=os.path.join(os.getcwd(), 'output_data'))
+    # help='Output directory.', default=os.path.join(os.getcwd(), 'output_data'))
     parser.add_argument('--num_matches', type=int,
                         help='Number of matches in the competition at the event.', default=50)
     args = parser.parse_args()
