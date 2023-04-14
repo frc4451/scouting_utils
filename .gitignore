@@ -178,3 +178,4 @@ pyrightconfig.json
 # Anything we added
 *.pdf
 student*.csv
+.DS_Store
