@@ -263,7 +263,7 @@ if __name__ == "__main__":
     parser.add_argument('--input', type=str,
                         help='Input file path. Expects CSV input.', required=True)
     parser.add_argument('--event', type=str,
-                        help='Evnet for labelling the schedule', required=True)
+                        help='Event for labelling the schedule', required=True)
     parser.add_argument('--out_path', type=str,
                         help='Output directory.', default=create_default_output_directory())
     # help='Output directory.', default=os.path.join(os.getcwd(), 'output_data'))
