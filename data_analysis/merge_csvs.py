@@ -7,12 +7,40 @@ def is_csv_header(row: str) -> bool:
     """
     Helps confirm that the `-c | --columns` parameter is a valid CSV
     column header that we can use in `group_by_and_sort`
+
+    Parameters
+    row: str - column header in a CSV format
+
+    Exceptions
+    - If the `csv` module throws an error, meaning that the string is not
+      a valid CSV format.
     """
     try:
         csv.Sniffer().has_header(row)
         return True
     except csv.Error:
         return False
+    
+def convert_csv_header_to_list(input: str, default: list[str] = []) -> list[str]:
+    """
+    Converts a header row from a CSV to a list of strings that can be used
+    to verify that columns exist in the DataFrame
+
+    Params
+    input: str - input string, assuming in CSV format
+    default: list[str] - default list of columns we can assume - default: empty list
+
+    Exceptions
+    - If input parameter is not a CSV, we throw a ValueError and specify the input given.
+    """
+    columns = []
+    if not input:
+        columns = default
+    else:
+        if not is_csv_header(input):
+            raise ValueError(f"Input columns parameter {input} is not a valid CSV header")
+        columns = list(csv.reader([input]))[0]
+    return columns 
 
 def read_csv_from_directory(directory: str) -> pd.DataFrame():
     """ 
@@ -59,6 +87,10 @@ def group_by_and_sort(df: pd.DataFrame, groupby: list[str] = [],
     
     Returns
     Pandas Dataframe that should be deduplicated given `df` and `columns`.
+
+    Exceptions
+    - If columns from `groupby` or `drop_duplicates` are missing, specify the 
+      missing columns and quit operation.
     """
     all_columns = [*groupby, *drop_duplicates]
     missing_columns = [col for col in all_columns if col not in df.columns]
@@ -96,23 +128,19 @@ if __name__ == "__main__":
     # from the scouting app data. However, you can specify your own list of
     # columns to group against. Groupby also handles order depending on the
     # position of the column in the list.
-    if not groupby_input:
-        groupby_columns = ['match_number', 'team_alliance', 'team_position', 'team_number']
-    else:
-        if not is_csv_header(groupby_input):
-            raise ValueError("Group By columns parameter is not a valid CSV header")
-        groupby_columns = list(csv.reader([groupby_input]))[0]
-    
+    groupby_columns = convert_csv_header_to_list(
+        input=groupby_input,
+        default=['match_number', 'team_alliance', 'team_position', 'team_number']
+    )
+
     # Handles drop_duplicates sanitization. By default we deduplicate on
     # columns we expect to see from the scouting app, but we can provide our
     # own list via CSV format. Drop Duplicates applies to each group, not the
     # entire dataset.
-    if not drop_duplicates_input:
-        drop_duplicates_columns = ['timestamp']
-    else:
-        if not is_csv_header(drop_duplicates_input):
-            raise ValueError("Drop Duplicate columns parameter is not a valid CSV header")
-        drop_duplicates_columns = list(csv.reader([drop_duplicates_input]))[0]
+    drop_duplicates_columns = convert_csv_header_to_list(
+        input=drop_duplicates_input,
+        default=['timestamp']
+    )
 
     # Combine results from all CSVs in the directory path provided.
     combined_df = read_csv_from_directory(directory=directory)
