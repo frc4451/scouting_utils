@@ -5,8 +5,8 @@
 # Requires both an input file and an output location for this to work.
 ################################################################################
 
-input=$1
-output=$2
+input="$1"
+output="$2"
 
 # Basic Input Validation to check if input exists
 if [[ -z $input ]]; then
@@ -21,9 +21,9 @@ fi
 output="converted/$output"
 
 # If the output directory, including subdirectories, don't exist, create it.
-if [ ! -d $output ]; then
-    mkdir -p $(dirname $output);
+if [ ! -d "$output" ]; then
+    mkdir -p "$(dirname $output)"
 fi
 
 # Run the conversions using FFMPEG
-ffmpeg -i $input -codec copy $output
+ffmpeg -i "$input" -codec copy "$output"
