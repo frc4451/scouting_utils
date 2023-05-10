@@ -21,7 +21,7 @@ savePath="${outputDir}/${channel}-$(date +"%mm-%dd-%Yy_%Hh-%Mm-%Ss").mkv"
 # Downloads video live to $savePath
 # Write to stdout so we can pipe it into ffmpeg
 # Twitch Low Latency to reduce latency
-# Segment Stream Data to make immediately write data because we need it quickly
+# Segment Stream Data to immediately write data because we need it quickly
 # ffmpeg to convert into an mkv
 streamlink \
     --stdout \
